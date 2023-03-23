@@ -103,7 +103,10 @@ def setup_logging(verbosity: int) -> None:
 def get_repo_commit_diff(repo: Repo) -> int:
     """Returns the number of commits ahead or behind the active branch's remote. Positive if ahead, negative if behind."""
     local_branch = repo.active_branch
-    remote_branch = repo.remote().refs[local_branch.name]
+    if len(repo.remotes) == 0:
+        return 0
+    remote = repo.remote()
+    remote_branch = remote.refs[local_branch.name]
     return local_branch.commit.count() - remote_branch.commit.count()
 
 
@@ -116,7 +119,10 @@ def get_repo_status(repo: Repo) -> str:
     if diff != 0:
         adverb = "ahead" if diff > 0 else "behind"
         local_branch = repo.active_branch
-        remote_branch = repo.remote().refs[repo.active_branch.name]
+        if len(repo.remotes) == 0:
+            return 0
+        remote = repo.remote()
+        remote_branch = remote.refs[repo.active_branch.name]
         status += f"'{local_branch.name}' is {adverb} '{remote_branch.name}' by {abs(diff)} commits."
     
     return status
@@ -141,7 +147,10 @@ def is_repo_dirty(repo: Repo) -> bool:
     if not is_dirty:
         # Check if the local branch is behind/ahead of the remote
         local_branch = repo.active_branch
-        remote_branch = repo.remote().refs[local_branch.name]
+        if len(repo.remotes) == 0:
+            return 0
+        remote = repo.remote()
+        remote_branch = remote.refs[local_branch.name]
         is_dirty = local_branch.commit != remote_branch.commit
     return is_dirty
 
